@@ -1,3 +1,4 @@
+import hashlib
 from typing import Optional
 
 from fastapi.encoders import jsonable_encoder
@@ -5,10 +6,9 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import count
 
+from dto.urls import CreateShortenUrl, StatisticsModel
 from models.models import Url, Statistics
 from services.base import RepositoryDB, CreateSchemaType, ModelType
-from dto.urls import CreateShortenUrl, StatisticsModel, BulkCreateShortenUrl
-import hashlib
 
 
 class RepositoryUrl(RepositoryDB[Url, CreateShortenUrl, CreateShortenUrl]):
@@ -18,8 +18,8 @@ class RepositoryUrl(RepositoryDB[Url, CreateShortenUrl, CreateShortenUrl]):
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self._model(
             **obj_in_data,
-            hashed_url_path=hashlib.md5(
-                obj_in_data.get('url_path').encode('utf8')).hexdigest(),
+            hashed_url=hashlib.md5(
+                obj_in_data.get('url').encode('utf8')).hexdigest(),
         )
         db.add(db_obj)
         await db.commit()
@@ -32,7 +32,7 @@ class RepositoryUrl(RepositoryDB[Url, CreateShortenUrl, CreateShortenUrl]):
         statement = select(
             self._model
         ).where(
-            self._model.hashed_url_path == short_url
+            self._model.hashed_url == short_url
         )
         results = await db.execute(statement=statement)
         return results.scalar_one_or_none()
@@ -46,8 +46,8 @@ class RepositoryUrl(RepositoryDB[Url, CreateShortenUrl, CreateShortenUrl]):
         for url in obj_in_data:
             db_obj = self._model(
                 **url,
-                hashed_url_path=hashlib.md5(
-                    url.get('url_path').encode('utf8')).hexdigest(),
+                hashed_url=hashlib.md5(
+                    url.get('url').encode('utf8')).hexdigest(),
             )
             db.add(db_obj)
             url_objects.append(db_obj)
@@ -63,7 +63,7 @@ class RepositoryUrl(RepositoryDB[Url, CreateShortenUrl, CreateShortenUrl]):
         statement = update(
             self._model
         ).where(
-            self._model.hashed_url_path == short_url
+            self._model.hashed_url == short_url
         ).values(
             is_deleted=True
         )
@@ -81,7 +81,7 @@ class RepositoryStatistics(RepositoryDB[
         statement = select(
             self._model
         ).join(Url).where(
-            Url.hashed_url_path == short_url
+            Url.hashed_url == short_url
         ).offset(offset).limit(limit)
         results = await db.execute(statement=statement)
         return results.scalars().all()
@@ -91,7 +91,7 @@ class RepositoryStatistics(RepositoryDB[
         statement = select(
             count()
         ).select_from(self._model).join(Url).where(
-            Url.hashed_url_path == short_url
+            Url.hashed_url == short_url
         )
         result = await db.execute(statement=statement)
         return result.scalar_one_or_none()

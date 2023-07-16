@@ -25,6 +25,8 @@ packaging==23.1
 pluggy==1.2.0
 pydantic==1.10.11
 pytest==7.4.0
+pytest-asyncio==0.21.1
+pytest-env==0.8.2
 python-dotenv==1.0.0
 python-multipart==0.0.6
 PyYAML==6.0

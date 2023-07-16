@@ -1,13 +1,15 @@
 from typing import Any, Optional, Union
 
 from fastapi import APIRouter, Depends, status, Query, HTTPException, Request
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse, JSONResponse
 
 from db.db import get_session
-from dto.urls import CreateShortenUrl, StatisticsModel, \
-    StatisticsResponseModel, BulkCreateShortenUrl, \
-    BulkCreateShortenUrlResponseModel
+from dto.urls import (CreateShortenUrl, StatisticsModel,
+                      StatisticsResponseModel, BulkCreateShortenUrl,
+                      BulkCreateShortenUrlResponseModel)
 from services.url import url_crud, statistics_crud
 
 router = APIRouter()
@@ -18,10 +20,11 @@ async def ping_db(
         db: AsyncSession = Depends(get_session)
 ) -> Any:
     try:
-        if await db.connection():
-            return JSONResponse(status_code=200, content={
-                'db_status': 'up'
-            })
+        statement = select(1)
+        await db.execute(statement)
+        return JSONResponse(status_code=200, content={
+            'db_status': 'up'
+        })
     except ConnectionRefusedError:
         return JSONResponse(status_code=500, content={
             'db_status': 'down',
@@ -36,7 +39,10 @@ async def shorten_url(
     """
     Create a shortened url.
     """
-    entity = await url_crud.create(db=db, obj_in=url)
+    try:
+        entity = await url_crud.create(db=db, obj_in=url)
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="Url already exist")
     return entity
 
 
@@ -57,7 +63,7 @@ async def set_deleted(
 ):
     await url_crud.set_deleted(db=db, short_url=short_url)
     return JSONResponse(status_code=status.HTTP_200_OK, content={
-        'deleted'
+        'detail': 'deleted'
     })
 
 
@@ -83,7 +89,7 @@ async def get_original_url(
     stats = StatisticsModel(url_id=url.id, ip=request.client.host)
     await statistics_crud.create(db=db, obj_in=stats)
 
-    return RedirectResponse(url.url_path,
+    return RedirectResponse(url.url,
                             status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
@@ -104,7 +110,6 @@ async def get_status(
                                                       short_url=short_url,
                                                       offset=offset,
                                                       limit=limit)
-        # create item by params
     count = await statistics_crud.get_count_by_short_url(db=db,
                                                          short_url=short_url)
     return JSONResponse(content={'statistics_count': count}, status_code=200)

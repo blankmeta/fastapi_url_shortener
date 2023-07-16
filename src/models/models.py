@@ -11,8 +11,8 @@ class Url(Base):
     __tablename__ = 'urls'
 
     id = Column(Integer, primary_key=True)
-    url_path = Column(String)
-    hashed_url_path = Column(String)
+    url = Column(String, unique=True)
+    hashed_url = Column(String)
     create_date = Column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -20,7 +20,7 @@ class Url(Base):
     statistics = relationship('Statistics')
 
     def __repr__(self):
-        return f'{self.url_path}'
+        return f'{self.url}'
 
 
 class Statistics(Base):

@@ -1,0 +1,10 @@
+[tool.pytest.ini_options]
+pythonpath = [
+    ".", "src",
+]
+asyncio_mode = "auto"
+
+env = [
+    "APP_TITLE=UrlShortenerTest",
+    "DATABASE_DSN=postgresql+asyncpg://postgres:postgres@localhost:6000/postgres",
+]

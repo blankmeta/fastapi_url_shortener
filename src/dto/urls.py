@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class CreateShortenUrl(BaseModel):
-    url_path: str
+    url: str
 
 
 class BulkCreateShortenUrl(BaseModel):
@@ -12,8 +12,8 @@ class BulkCreateShortenUrl(BaseModel):
 
 
 class UrlModel(BaseModel):
-    url_path: str
-    hashed_url_path: str
+    url: str
+    hashed_url: str
 
     class Config:
         orm_mode = True
