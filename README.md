@@ -42,6 +42,34 @@ GET /<shorten-url-id>/status?[full-info]&[max-result=10]&[offset=0]
 </details>
 
 
+## Тестирование
+
+Запустите базу на порту 6000
+```
+docker run \
+  --rm \
+  --name postgres-fastapi-test \
+  -p 6000:6000 \
+  -e POSTGRES_USER=postgres \
+  -e PGPORT=6000 \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=collection \
+  -d postgres:14.5
+```
+
+В корневой директории запустите тесты ```pytest -v```
+
+
+## Переменные окружения
+
+Шаблон наполнения файла .env в директории /src/
+
+```
+APP_TITLE="UrlShortener"
+DATABASE_DSN=postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+```
+
+
 ## Дополнительные требования (отметьте [Х] выбранные пункты):
 
 - [✅] (1 балл) Реализуйте метод `GET /ping`, который возвращает информацию о статусе доступности БД.
