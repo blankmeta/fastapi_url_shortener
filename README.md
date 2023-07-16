@@ -68,6 +68,7 @@ docker run \
 APP_TITLE="UrlShortener"
 DATABASE_DSN=postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
 ```
+Или в файле ```/src/.env.example```
 
 
 ## Дополнительные требования (отметьте [Х] выбранные пункты):
