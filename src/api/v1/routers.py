@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Annotated
 
 from fastapi import APIRouter, Depends, status, Query, HTTPException, Request
 from sqlalchemy import select
@@ -6,6 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse, JSONResponse
 
+from auth.dto import UserDTO
+from auth.services import get_current_active_user
 from db.db import get_session
 from dto.urls import (CreateShortenUrl, StatisticsModel,
                       StatisticsResponseModel, BulkCreateShortenUrl,
@@ -15,7 +17,10 @@ from services.url import url_crud, statistics_crud
 router = APIRouter()
 
 
-@router.get('/ping')
+@router.get('/ping', responses={
+    200: {'db_status': 'up'},
+    500: {'db_status': 'down'}
+})
 async def ping_db(
         db: AsyncSession = Depends(get_session)
 ) -> Any:
@@ -34,7 +39,8 @@ async def ping_db(
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def shorten_url(
         url: CreateShortenUrl,
-        db: AsyncSession = Depends(get_session)
+        # current_user: Annotated[UserDTO, Depends(get_current_active_user)],
+        db: AsyncSession = Depends(get_session),
 ):
     """
     Create a shortened url.

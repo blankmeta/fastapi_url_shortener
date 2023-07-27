@@ -10,7 +10,7 @@ client = TestClient(app)
 class TestUrl:
     URL_EXAMPLE = 'https://some-url.com'
     HASHED_URL_EXAMPLE = '00a583dd1bed7bc6f3bbaf12e03f5fa4'
-    HASHED_UNEXISTED_URL = 'aaa583dd1bed7bc6f3bbaf12e03f5f12'
+    HASHED_UNEXISTING_URL = 'aaa583dd1bed7bc6f3bbaf12e03f5f12'
 
     async def test_db_connection(self, ac: AsyncClient):
         url = app.url_path_for('ping_db')
@@ -42,7 +42,7 @@ class TestUrl:
 
     async def test_not_found_url(self, ac: AsyncClient):
         url = app.url_path_for('get_original_url',
-                               short_url=self.HASHED_UNEXISTED_URL)
+                               short_url=self.HASHED_UNEXISTING_URL)
         response = await ac.get(url)
 
         assert response.status_code == status.HTTP_404_NOT_FOUND

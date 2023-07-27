@@ -1,8 +1,6 @@
-from datetime import datetime
-
 from sqlalchemy import (Integer, String, func, DateTime, ForeignKey, Boolean,
                         Column)
-from sqlalchemy.orm import Mapped, relationship, validates
+from sqlalchemy.orm import relationship
 
 from db.db import Base
 
